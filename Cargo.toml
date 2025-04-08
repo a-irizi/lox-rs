@@ -1,0 +1,11 @@
+[package]
+name = "rox"
+version = "0.1.0"
+edition = "2024"
+description = "A Rust-based implementation of the Lox programming language"
+authors = ["Anass IRIZI - anass.irizi.00@gmail.com"]
+
+[dependencies]
+claims = "0.8.0"
+clap = { version = "4.5.31", features = ["derive"] }
+thiserror = "2"
