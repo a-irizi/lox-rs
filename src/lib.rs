@@ -3,6 +3,7 @@
 //! Lox is defined in the book "Crafting Interpreters" by Robert Nystrom.
 
 mod error;
+mod expr;
 mod reporting;
 mod scanner;
 mod token;
