@@ -2,6 +2,7 @@ use std::{fmt::Display, ops::Deref};
 
 use crate::token::{Token, TokenKind};
 
+/// Represents a binary operator token.
 pub struct BinaryOperator<'src>(Token<'src>);
 
 impl<'src> AsRef<Token<'src>> for BinaryOperator<'src> {
@@ -39,7 +40,7 @@ impl<'src> TryFrom<Token<'src>> for BinaryOperator<'src> {
       | TokenKind::Minus
       | TokenKind::Star
       | TokenKind::Slash => Ok(BinaryOperator(token)),
-      _ => Err(super::Error::InvalidBinaryOperator(token)),
+      _ => Err(super::Error::BinaryOperator(token)),
     }
   }
 }

@@ -1,7 +1,11 @@
 use std::{fmt::Display, ops::Deref};
 
-use crate::token::{Token, TokenKind};
+use crate::{
+  expr::error,
+  token::{Token, TokenKind},
+};
 
+/// represents a unary operator token.
 pub struct UnaryOperator<'src>(Token<'src>);
 
 impl<'src> AsRef<Token<'src>> for UnaryOperator<'src> {
@@ -25,12 +29,12 @@ impl Display for UnaryOperator<'_> {
 }
 
 impl<'src> TryFrom<Token<'src>> for UnaryOperator<'src> {
-  type Error = super::Error<'src>;
+  type Error = error::Error<'src>;
 
-  fn try_from(token: Token<'src>) -> super::Result<UnaryOperator<'src>> {
+  fn try_from(token: Token<'src>) -> error::Result<'src, Self> {
     match token.kind {
       TokenKind::Bang | TokenKind::Minus => Ok(UnaryOperator(token)),
-      _ => Err(super::Error::InvalidUnaryOperator(token)),
+      _ => Err(error::Error::UnaryOperator(token)),
     }
   }
 }

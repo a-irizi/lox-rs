@@ -4,6 +4,7 @@
 
 mod error;
 mod expr;
+mod parser;
 mod reporting;
 mod scanner;
 mod token;
