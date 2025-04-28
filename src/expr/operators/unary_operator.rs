@@ -25,12 +25,12 @@ impl Display for UnaryOperator<'_> {
 }
 
 impl<'src> TryFrom<Token<'src>> for UnaryOperator<'src> {
-  type Error = super::Error;
+  type Error = super::Error<'src>;
 
-  fn try_from(value: Token<'src>) -> super::Result<UnaryOperator<'src>> {
-    match value.kind {
-      TokenKind::Bang | TokenKind::Minus => Ok(UnaryOperator(value)),
-      _ => Err(super::Error::InvalidUnaryOperator),
+  fn try_from(token: Token<'src>) -> super::Result<UnaryOperator<'src>> {
+    match token.kind {
+      TokenKind::Bang | TokenKind::Minus => Ok(UnaryOperator(token)),
+      _ => Err(super::Error::InvalidUnaryOperator(token)),
     }
   }
 }

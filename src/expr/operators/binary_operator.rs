@@ -25,10 +25,10 @@ impl Display for BinaryOperator<'_> {
 }
 
 impl<'src> TryFrom<Token<'src>> for BinaryOperator<'src> {
-  type Error = super::Error;
+  type Error = super::Error<'src>;
 
-  fn try_from(value: Token<'src>) -> Result<Self, Self::Error> {
-    match value.kind {
+  fn try_from(token: Token<'src>) -> Result<Self, Self::Error> {
+    match token.kind {
       TokenKind::BangEqual
       | TokenKind::EqualEqual
       | TokenKind::Less
@@ -38,8 +38,8 @@ impl<'src> TryFrom<Token<'src>> for BinaryOperator<'src> {
       | TokenKind::Plus
       | TokenKind::Minus
       | TokenKind::Star
-      | TokenKind::Slash => Ok(BinaryOperator(value)),
-      _ => Err(super::Error::InvalidBinaryOperator),
+      | TokenKind::Slash => Ok(BinaryOperator(token)),
+      _ => Err(super::Error::InvalidBinaryOperator(token)),
     }
   }
 }

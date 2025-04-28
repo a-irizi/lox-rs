@@ -1,11 +1,13 @@
 use thiserror::Error;
 
-pub type Result<T> = core::result::Result<T, Error>;
+use crate::token::Token;
+
+pub type Result<'src, T> = core::result::Result<T, Error<'src>>;
 
 #[derive(Debug, Error)]
-pub enum Error {
+pub enum Error<'src> {
   #[error("invalid unary operator token")]
-  InvalidUnaryOperator,
+  InvalidUnaryOperator(Token<'src>),
   #[error("invalid binary operator token")]
-  InvalidBinaryOperator,
+  InvalidBinaryOperator(Token<'src>),
 }
