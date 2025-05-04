@@ -1,19 +1,21 @@
-mod binary_operator;
 mod error;
 mod formatter;
-mod literal;
-mod unary_operator;
+mod terminal;
 
-use self::{
-  binary_operator::BinaryOperator,
+pub use self::{
   error::{Error, Result},
-  literal::Literal,
-  unary_operator::UnaryOperator,
+  formatter::{AstFormatter, RpnFormatter},
+  terminal::{
+    BinaryOperator, CommaOperator, ComparisonOperator, FactorOperator, Literal, TermOperator,
+    Terminal, TernaryElseOperator, TernaryThenOperator, UnaryOperator,
+  },
 };
 
 /// represents an expression in the source code.
+#[derive(Debug)]
 pub enum Expr<'src> {
   Binary { left: Box<Expr<'src>>, operator: BinaryOperator<'src>, right: Box<Expr<'src>> },
+  Ternary { condition: Box<Expr<'src>>, then_branch: Box<Expr<'src>>, else_branch: Box<Expr<'src>> },
   Grouping(Box<Expr<'src>>),
   Unary { operator: UnaryOperator<'src>, right: Box<Expr<'src>> },
   Literal(Literal<'src>),
@@ -26,6 +28,18 @@ impl<'src> Expr<'src> {
   /// A new binary expression.
   pub fn binary(left: Expr<'src>, operator: BinaryOperator<'src>, right: Expr<'src>) -> Self {
     Expr::Binary { left: Box::new(left), operator, right: Box::new(right) }
+  }
+
+  /// creates a new ternary expression.
+  ///
+  /// # Returns
+  /// A new ternary expression.
+  pub fn ternary(condition: Expr<'src>, then_branch: Expr<'src>, else_branch: Expr<'src>) -> Self {
+    Expr::Ternary {
+      condition: Box::new(condition),
+      then_branch: Box::new(then_branch),
+      else_branch: Box::new(else_branch),
+    }
   }
   /// creates a new literal expression.
   ///

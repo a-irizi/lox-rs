@@ -10,6 +10,18 @@ pub enum Error<'src> {
   UnaryOperator(Token<'src>),
   #[error("invalid binary operator token")]
   BinaryOperator(Token<'src>),
+  #[error("invalid comparison operator token")]
+  ComparisonOperator(Token<'src>),
+  #[error("invalid factor operator token")]
+  FactorOperator(Token<'src>),
+  #[error("invalid term operator token")]
+  TermOperator(Token<'src>),
+  #[error("invalid comma operator token")]
+  CommaOperator(Token<'src>),
+  #[error("invalid ternary then branch token")]
+  TernaryThenOperator(Token<'src>),
+  #[error("invalid ternary else branch token")]
+  TernaryElseOperator(Token<'src>),
   #[error("invalid literal token")]
   Literal(Token<'src>),
 }

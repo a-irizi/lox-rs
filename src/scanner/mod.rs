@@ -90,6 +90,8 @@ impl<'a> Iterator for Scanner<'a> {
         '+' => self.single(TokenKind::Plus),
         ';' => self.single(TokenKind::SemiColon),
         '*' => self.single(TokenKind::Star),
+        '?' => self.single(TokenKind::Question),
+        ':' => self.single(TokenKind::Colon),
 
         // multi character
         '!' => if_next_else('=', TokenKind::BangEqual, TokenKind::Bang),
@@ -148,7 +150,7 @@ mod tests {
   #[test]
   fn lex_single_tokens_ok() {
     // arrange
-    let input = "(){},.-+;";
+    let input = "(){},.-+;:?";
     let mut scanner = Scanner::new(input);
 
     // act and assert
@@ -168,6 +170,8 @@ mod tests {
     assert_just(TokenKind::Minus);
     assert_just(TokenKind::Plus);
     assert_just(TokenKind::SemiColon);
+    assert_just(TokenKind::Colon);
+    assert_just(TokenKind::Question);
     assert_none!(scanner.next());
   }
 

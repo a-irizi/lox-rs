@@ -5,6 +5,12 @@ pub struct AstFormatter;
 impl ExprVisitor for AstFormatter {
   fn visit(&self, expr: &Expr) -> String {
     match expr {
+      Expr::Ternary { condition, then_branch, else_branch } => format!(
+        "(? {} {} {})",
+        self.visit(condition),
+        self.visit(then_branch),
+        self.visit(else_branch)
+      ),
       Expr::Binary { left, operator, right } => {
         format!("({} {} {})", operator, self.visit(left), self.visit(right))
       }
@@ -22,6 +28,14 @@ pub struct RpnFormatter;
 impl ExprVisitor for RpnFormatter {
   fn visit(&self, expr: &Expr) -> String {
     match expr {
+      Expr::Ternary { condition, then_branch, else_branch } => {
+        format!(
+          "{} {} {} ?",
+          self.visit(condition),
+          self.visit(then_branch),
+          self.visit(else_branch)
+        )
+      }
       Expr::Binary { left, operator, right } => {
         format!("{} {} {}", self.visit(left), self.visit(right), operator)
       }

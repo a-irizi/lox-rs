@@ -5,8 +5,23 @@ use crate::{
   token::{Token, TokenKind},
 };
 
+use super::Terminal;
+
 /// represents a unary operator token.
+#[derive(Debug)]
 pub struct UnaryOperator<'src>(Token<'src>);
+
+impl<'src> Terminal<'src> for UnaryOperator<'src> {
+  fn matches(token: &Token) -> bool {
+    matches!(token.kind, TokenKind::Bang | TokenKind::Minus)
+  }
+}
+
+impl<'src> From<UnaryOperator<'src>> for Token<'src> {
+  fn from(value: UnaryOperator<'src>) -> Self {
+    value.0
+  }
+}
 
 impl<'src> AsRef<Token<'src>> for UnaryOperator<'src> {
   fn as_ref(&self) -> &Token<'src> {
@@ -32,9 +47,10 @@ impl<'src> TryFrom<Token<'src>> for UnaryOperator<'src> {
   type Error = error::Error<'src>;
 
   fn try_from(token: Token<'src>) -> error::Result<'src, Self> {
-    match token.kind {
-      TokenKind::Bang | TokenKind::Minus => Ok(UnaryOperator(token)),
-      _ => Err(error::Error::UnaryOperator(token)),
+    if <Self as Terminal>::matches(&token) {
+      Ok(UnaryOperator(token))
+    } else {
+      Err(error::Error::UnaryOperator(token))
     }
   }
 }
