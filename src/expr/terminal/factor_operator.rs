@@ -8,47 +8,47 @@ use crate::{
 use super::Terminal;
 
 #[derive(Debug)]
-pub struct FactorOperator<'src>(Token<'src>);
+pub struct FactorOperator(TokenKind);
 
-impl<'src> Terminal<'src> for FactorOperator<'src> {
+impl Terminal for FactorOperator {
   fn matches(token: &Token) -> bool {
     matches!(token.kind, TokenKind::Star | TokenKind::Slash)
   }
 }
 
-impl<'src> From<FactorOperator<'src>> for Token<'src> {
-  fn from(value: FactorOperator<'src>) -> Self {
+impl From<FactorOperator> for TokenKind {
+  fn from(value: FactorOperator) -> Self {
     value.0
   }
 }
 
-impl<'src> AsRef<Token<'src>> for FactorOperator<'src> {
-  fn as_ref(&self) -> &Token<'src> {
+impl AsRef<TokenKind> for FactorOperator {
+  fn as_ref(&self) -> &TokenKind {
     &self.0
   }
 }
 
-impl<'src> Deref for FactorOperator<'src> {
-  type Target = Token<'src>;
+impl Deref for FactorOperator {
+  type Target = TokenKind;
 
   fn deref(&self) -> &Self::Target {
     &self.0
   }
 }
 
-impl<'src> TryFrom<Token<'src>> for FactorOperator<'src> {
+impl<'src> TryFrom<Token<'src>> for FactorOperator {
   type Error = expr::Error<'src>;
 
   fn try_from(token: Token<'src>) -> Result<Self, Self::Error> {
     if <FactorOperator as Terminal>::matches(&token) {
-      Ok(FactorOperator(token))
+      Ok(FactorOperator(token.kind))
     } else {
       Err(expr::Error::FactorOperator(token))
     }
   }
 }
 
-impl Display for FactorOperator<'_> {
+impl Display for FactorOperator {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "{}", self.0)
   }

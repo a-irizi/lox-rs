@@ -2,7 +2,7 @@ use super::{Expr, ExprVisitor};
 
 /// Abstract Syntax Tree (AST) formatter in List style format.
 pub struct AstFormatter;
-impl ExprVisitor for AstFormatter {
+impl ExprVisitor<String> for AstFormatter {
   fn visit(&self, expr: &Expr) -> String {
     match expr {
       Expr::Ternary { condition, then_branch, else_branch } => format!(
@@ -25,7 +25,7 @@ impl ExprVisitor for AstFormatter {
 
 /// Abstract Syntax Tree (AST) formatter in Reverse Polish Notation (RPN) format.
 pub struct RpnFormatter;
-impl ExprVisitor for RpnFormatter {
+impl ExprVisitor<String> for RpnFormatter {
   fn visit(&self, expr: &Expr) -> String {
     match expr {
       Expr::Ternary { condition, then_branch, else_branch } => {
@@ -55,11 +55,11 @@ mod tests {
   #[test]
   fn print_ast_binary() {
     let expr = Expr::binary(
-      Expr::literal(Token::new(TokenKind::Number, Some("1"), 1).try_into().unwrap()),
+      Expr::literal(Token::new(TokenKind::Number(1f64), Some("1"), 1).try_into().unwrap()),
       Token::new(TokenKind::Plus, None, 1).try_into().unwrap(),
-      Expr::literal(Token::new(TokenKind::Number, Some("2"), 1).try_into().unwrap()),
+      Expr::literal(Token::new(TokenKind::Number(2f64), Some("2"), 1).try_into().unwrap()),
     );
-    let tests: Vec<(&dyn ExprVisitor, _, _)> = vec![
+    let tests: Vec<(&dyn ExprVisitor<String>, _, _)> = vec![
       (&AstFormatter, "(+ 1 2)", "wrong Lisp-like notation result"),
       (&RpnFormatter, "1 2 +", "wrong RPN result"),
     ];
@@ -75,10 +75,10 @@ mod tests {
   fn print_ast_unary() {
     let expr = Expr::unary(
       Token::new(TokenKind::Minus, None, 1).try_into().unwrap(),
-      Expr::literal(Token::new(TokenKind::Number, Some("2"), 1).try_into().unwrap()),
+      Expr::literal(Token::new(TokenKind::Number(2f64), Some("2"), 1).try_into().unwrap()),
     );
 
-    let tests: Vec<(&dyn ExprVisitor, _, _)> = vec![
+    let tests: Vec<(&dyn ExprVisitor<String>, _, _)> = vec![
       (&AstFormatter, "(- 2)", "wrong Lisp-like notation result"),
       (&RpnFormatter, "-2", "wrong RPN result"),
     ];
@@ -93,10 +93,10 @@ mod tests {
   #[test]
   fn print_ast_grouping() {
     let expr = Expr::grouping(Expr::literal(
-      Token::new(TokenKind::Number, Some("45.67"), 1).try_into().unwrap(),
+      Token::new(TokenKind::Number(45.67), Some("45.67"), 1).try_into().unwrap(),
     ));
 
-    let tests: Vec<(&dyn ExprVisitor, _, _)> = vec![
+    let tests: Vec<(&dyn ExprVisitor<String>, _, _)> = vec![
       (&AstFormatter, "(group 45.67)", "wrong Lisp-like notation result"),
       (&RpnFormatter, "45.67", "wrong RPN result"),
     ];
@@ -110,9 +110,10 @@ mod tests {
 
   #[test]
   fn print_ast_literal() {
-    let expr = Expr::literal(Token::new(TokenKind::Number, Some("45.67"), 1).try_into().unwrap());
+    let expr =
+      Expr::literal(Token::new(TokenKind::Number(45.67), Some("45.67"), 1).try_into().unwrap());
 
-    let tests: Vec<(&dyn ExprVisitor, _, _)> = vec![
+    let tests: Vec<(&dyn ExprVisitor<String>, _, _)> = vec![
       (&AstFormatter, "45.67", "wrong Lisp-like notation result"),
       (&RpnFormatter, "45.67", "wrong RPN result"),
     ];
@@ -129,15 +130,15 @@ mod tests {
     let expr = Expr::binary(
       Expr::unary(
         Token::new(TokenKind::Minus, None, 1).try_into().unwrap(),
-        Expr::literal(Token::new(TokenKind::Number, Some("123"), 1).try_into().unwrap()),
+        Expr::literal(Token::new(TokenKind::Number(123f64), Some("123"), 1).try_into().unwrap()),
       ),
       Token::new(TokenKind::Star, None, 1).try_into().unwrap(),
       Expr::grouping(Expr::literal(
-        Token::new(TokenKind::Number, Some("45.67"), 1).try_into().unwrap(),
+        Token::new(TokenKind::Number(45.67), Some("45.67"), 1).try_into().unwrap(),
       )),
     );
 
-    let tests: Vec<(&dyn ExprVisitor, _, _)> = vec![
+    let tests: Vec<(&dyn ExprVisitor<String>, _, _)> = vec![
       (&AstFormatter, "(* (- 123) (group 45.67))", "wrong Lisp-like notation result"),
       (&RpnFormatter, "-123 45.67 *", "wrong RPN result"),
     ];

@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::Deref};
 
-use crate::token::Token;
+use crate::token::{Token, TokenKind};
 
 use super::{
   CommaOperator, Terminal, comparision_operator::ComparisonOperator,
@@ -9,9 +9,9 @@ use super::{
 
 /// Represents a binary operator token.
 #[derive(Debug)]
-pub struct BinaryOperator<'src>(Token<'src>);
+pub struct BinaryOperator(TokenKind);
 
-impl<'src> Terminal<'src> for BinaryOperator<'src> {
+impl Terminal for BinaryOperator {
   fn matches(token: &Token) -> bool {
     CommaOperator::matches(token)
       || ComparisonOperator::matches(token)
@@ -20,57 +20,57 @@ impl<'src> Terminal<'src> for BinaryOperator<'src> {
   }
 }
 
-impl<'src> From<BinaryOperator<'src>> for Token<'src> {
-  fn from(value: BinaryOperator<'src>) -> Self {
+impl From<BinaryOperator> for TokenKind {
+  fn from(value: BinaryOperator) -> Self {
     value.0
   }
 }
 
-impl<'src> AsRef<Token<'src>> for BinaryOperator<'src> {
-  fn as_ref(&self) -> &Token<'src> {
+impl AsRef<TokenKind> for BinaryOperator {
+  fn as_ref(&self) -> &TokenKind {
     &self.0
   }
 }
 
-impl<'src> Deref for BinaryOperator<'src> {
-  type Target = Token<'src>;
+impl Deref for BinaryOperator {
+  type Target = TokenKind;
 
   fn deref(&self) -> &Self::Target {
     &self.0
   }
 }
 
-impl<'src> TryFrom<Token<'src>> for BinaryOperator<'src> {
+impl<'src> TryFrom<Token<'src>> for BinaryOperator {
   type Error = crate::expr::Error<'src>;
 
   fn try_from(token: Token<'src>) -> Result<Self, Self::Error> {
     if <Self as Terminal>::matches(&token) {
-      Ok(BinaryOperator(token))
+      Ok(BinaryOperator(token.kind))
     } else {
       Err(Self::Error::BinaryOperator(token))
     }
   }
 }
 
-impl<'src> From<ComparisonOperator<'src>> for BinaryOperator<'src> {
-  fn from(operator: ComparisonOperator<'src>) -> Self {
-    BinaryOperator(operator.into_token())
+impl From<ComparisonOperator> for BinaryOperator {
+  fn from(operator: ComparisonOperator) -> Self {
+    BinaryOperator(operator.into())
   }
 }
 
-impl<'src> From<TermOperator<'src>> for BinaryOperator<'src> {
-  fn from(operator: TermOperator<'src>) -> Self {
-    BinaryOperator(operator.into_token())
+impl From<TermOperator> for BinaryOperator {
+  fn from(operator: TermOperator) -> Self {
+    BinaryOperator(operator.into())
   }
 }
 
-impl<'src> From<FactorOperator<'src>> for BinaryOperator<'src> {
-  fn from(operator: FactorOperator<'src>) -> Self {
-    BinaryOperator(operator.into_token())
+impl From<FactorOperator> for BinaryOperator {
+  fn from(operator: FactorOperator) -> Self {
+    BinaryOperator(operator.into())
   }
 }
 
-impl Display for BinaryOperator<'_> {
+impl Display for BinaryOperator {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "{}", self.0)
   }

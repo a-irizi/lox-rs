@@ -14,7 +14,11 @@ impl<'a> Scanner<'a> {
         '"' => {
           let lexeme = &self.rest[..=index];
           self.rest = &self.rest[index + 1..];
-          Some(Token::new(TokenKind::String, Some(lexeme), self.line))
+          Some(Token::new(
+            TokenKind::String(lexeme[1..lexeme.len() - 1].into()),
+            Some(lexeme),
+            self.line,
+          ))
         }
         c => {
           if c == '\n' {
@@ -32,45 +36,47 @@ impl<'a> Scanner<'a> {
 
 #[cfg(test)]
 mod tests {
-  use claims::{assert_matches, assert_none};
+  use claims::{assert_matches, assert_none, assert_ok, assert_some};
 
   use super::*;
 
   #[test]
   fn lex_string_one_line_ok() {
-    let source = r#""this is a string literal""#;
-    let mut scanner = Scanner::new(source);
+    let literal = "this is a string literal";
+    let source = format!("{literal:?}");
+    let mut scanner = Scanner::new(&source);
+    let token = assert_some!(scanner.next());
+    let token = assert_ok!(token);
 
     assert_matches!(
-      scanner.next(),
-      Some(Ok(Token {
-        kind: TokenKind::String,
-        lexeme: Some(r#""this is a string literal""#),
-        line: 1
-      }))
+      token,
+      Token { kind: TokenKind::String(s), lexeme: Some(l), line: 1 } if s == literal && l == format!(r#""{literal}""#)
     );
     assert_none!(scanner.next());
   }
 
   #[test]
   fn lex_string_multi_line_ok() {
-    let source = r#""this is a string literal
+    let literal = "this is a string literal
 string literal can cross multiple lines.
-just like rust's."
-  "#;
-    let mut scanner = Scanner::new(source);
+just like rust's.";
+    let source = format!(
+      r#""{literal}"
+  "#,
+    );
+    let mut scanner = Scanner::new(&source);
+
+    let token = scanner.next();
+    let token = assert_some!(token);
+    let token = assert_ok!(token);
 
     assert_matches!(
-      scanner.next(),
-      Some(Ok(Token {
-        kind: TokenKind::String,
+      token,
+      Token {
+        kind: TokenKind::String(s),
         line: 3,
-        lexeme: Some(
-          r#""this is a string literal
-string literal can cross multiple lines.
-just like rust's.""#
-        )
-      }))
+        lexeme: Some( l )
+      } if s == literal && l == format!(r#""{literal}""#)
     );
     assert_none!(scanner.next());
   }

@@ -13,20 +13,20 @@ pub use self::{
 
 /// represents an expression in the source code.
 #[derive(Debug)]
-pub enum Expr<'src> {
-  Binary { left: Box<Expr<'src>>, operator: BinaryOperator<'src>, right: Box<Expr<'src>> },
-  Ternary { condition: Box<Expr<'src>>, then_branch: Box<Expr<'src>>, else_branch: Box<Expr<'src>> },
-  Grouping(Box<Expr<'src>>),
-  Unary { operator: UnaryOperator<'src>, right: Box<Expr<'src>> },
-  Literal(Literal<'src>),
+pub enum Expr {
+  Binary { left: Box<Expr>, operator: BinaryOperator, right: Box<Expr> },
+  Ternary { condition: Box<Expr>, then_branch: Box<Expr>, else_branch: Box<Expr> },
+  Grouping(Box<Expr>),
+  Unary { operator: UnaryOperator, right: Box<Expr> },
+  Literal(Literal),
 }
 
-impl<'src> Expr<'src> {
+impl Expr {
   /// creates a new binary expression.
   ///
   /// # Returns
   /// A new binary expression.
-  pub fn binary(left: Expr<'src>, operator: BinaryOperator<'src>, right: Expr<'src>) -> Self {
+  pub fn binary(left: Expr, operator: BinaryOperator, right: Expr) -> Self {
     Expr::Binary { left: Box::new(left), operator, right: Box::new(right) }
   }
 
@@ -34,7 +34,7 @@ impl<'src> Expr<'src> {
   ///
   /// # Returns
   /// A new ternary expression.
-  pub fn ternary(condition: Expr<'src>, then_branch: Expr<'src>, else_branch: Expr<'src>) -> Self {
+  pub fn ternary(condition: Expr, then_branch: Expr, else_branch: Expr) -> Self {
     Expr::Ternary {
       condition: Box::new(condition),
       then_branch: Box::new(then_branch),
@@ -45,26 +45,26 @@ impl<'src> Expr<'src> {
   ///
   /// # Returns
   /// A new literal expression.
-  pub fn literal(literal: Literal<'src>) -> Self {
+  pub fn literal(literal: Literal) -> Self {
     Expr::Literal(literal)
   }
   /// creates a new unary expression.
   ///
   /// # Returns
   /// A new unary expression.
-  pub fn unary(operator: UnaryOperator<'src>, right: Expr<'src>) -> Self {
+  pub fn unary(operator: UnaryOperator, right: Expr) -> Self {
     Expr::Unary { operator, right: Box::new(right) }
   }
   /// creates a new grouping expression.
   ///
   /// # Returns
   /// A new grouping expression.
-  pub fn grouping(expression: Expr<'src>) -> Self {
+  pub fn grouping(expression: Expr) -> Self {
     Expr::Grouping(Box::new(expression))
   }
 }
 
 /// `ExprVisitor` is a trait that defines a visitor pattern for expressions.
-pub trait ExprVisitor {
-  fn visit(&self, expr: &Expr) -> String;
+pub trait ExprVisitor<T> {
+  fn visit(&self, expr: &Expr) -> T;
 }

@@ -13,7 +13,7 @@ use std::{
   ops::Deref,
 };
 
-use crate::token::Token;
+use crate::token::{Token, TokenKind};
 
 pub use self::{
   binary_operator::BinaryOperator, comma_operator::CommaOperator,
@@ -22,16 +22,13 @@ pub use self::{
   ternary_then_operator::TernaryThenOperator, unary_operator::UnaryOperator,
 };
 
-pub trait Terminal<'src>:
-  TryFrom<Token<'src>>
-  + Into<Token<'src>>
-  + AsRef<Token<'src>>
-  + Deref<Target = Token<'src>>
+pub trait Terminal:
+  for<'src> TryFrom<Token<'src>>
+  + Into<TokenKind>
+  + AsRef<TokenKind>
+  + Deref<Target = TokenKind>
   + Debug
   + Display
 {
   fn matches(token: &Token) -> bool;
-  fn into_token(self) -> Token<'src> {
-    self.into()
-  }
 }

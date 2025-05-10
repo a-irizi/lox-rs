@@ -8,47 +8,47 @@ use crate::{
 use super::Terminal;
 
 #[derive(Debug)]
-pub struct TermOperator<'src>(Token<'src>);
+pub struct TermOperator(TokenKind);
 
-impl<'src> Terminal<'src> for TermOperator<'src> {
+impl Terminal for TermOperator {
   fn matches(token: &Token) -> bool {
     matches!(token.kind, TokenKind::Plus | TokenKind::Minus)
   }
 }
 
-impl<'src> From<TermOperator<'src>> for Token<'src> {
-  fn from(value: TermOperator<'src>) -> Self {
+impl From<TermOperator> for TokenKind {
+  fn from(value: TermOperator) -> Self {
     value.0
   }
 }
 
-impl<'src> AsRef<Token<'src>> for TermOperator<'src> {
-  fn as_ref(&self) -> &Token<'src> {
+impl AsRef<TokenKind> for TermOperator {
+  fn as_ref(&self) -> &TokenKind {
     &self.0
   }
 }
 
-impl<'src> Deref for TermOperator<'src> {
-  type Target = Token<'src>;
+impl Deref for TermOperator {
+  type Target = TokenKind;
 
   fn deref(&self) -> &Self::Target {
     &self.0
   }
 }
 
-impl<'src> TryFrom<Token<'src>> for TermOperator<'src> {
+impl<'src> TryFrom<Token<'src>> for TermOperator {
   type Error = expr::Error<'src>;
 
   fn try_from(token: Token<'src>) -> Result<Self, Self::Error> {
     if <TermOperator as Terminal>::matches(&token) {
-      Ok(TermOperator(token))
+      Ok(TermOperator(token.kind))
     } else {
       Err(expr::Error::TermOperator(token))
     }
   }
 }
 
-impl Display for TermOperator<'_> {
+impl Display for TermOperator {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "{}", self.0)
   }
