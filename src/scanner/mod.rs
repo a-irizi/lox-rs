@@ -129,6 +129,7 @@ impl<'src> Iterator for Scanner<'src> {
 
         c => {
           let bad_bit = &self.rest[..c.len_utf8()];
+          self.rest = &self.rest[c.len_utf8()..];
           return Some(Err(Error::InvalidCharacter { character: bad_bit, line: self.line }));
         }
       };
@@ -140,7 +141,7 @@ impl<'src> Iterator for Scanner<'src> {
 
 #[cfg(test)]
 mod tests {
-  use claims::{assert_matches, assert_none};
+  use claims::{assert_err, assert_matches, assert_none, assert_ok, assert_some};
 
   use super::*;
   #[test]
@@ -230,6 +231,25 @@ mod tests {
     assert_just(TokenKind::Greater, 3);
     assert_just(TokenKind::LessEqual, 3);
     assert_just(TokenKind::EqualEqual, 3);
+    assert_none!(scanner.next());
+  }
+
+  #[test]
+  fn lex_invalid_character() {
+    let src = r#"identifier "string literal" % identifier2"#;
+    let mut scanner = Scanner::new(src);
+
+    let next = assert_some!(scanner.nth(2));
+    let error = assert_err!(next);
+
+    assert_matches!(error, Error::InvalidCharacter { character: "%", line: 1 });
+    let next = assert_some!(scanner.next());
+    let token = assert_ok!(next);
+    assert_matches!(
+      token,
+      Token { kind: TokenKind::Identifier, lexeme: Some("identifier2"), line: 1 }
+    );
+
     assert_none!(scanner.next());
   }
 }
