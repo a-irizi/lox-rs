@@ -58,8 +58,8 @@ impl<'a> Scanner<'a> {
   }
 }
 
-impl<'a> Iterator for Scanner<'a> {
-  type Item = Result<Token<'a>>;
+impl<'src> Iterator for Scanner<'src> {
+  type Item = Result<'src, Token<'src>>;
 
   fn next(&mut self) -> Option<Self::Item> {
     loop {
@@ -127,7 +127,10 @@ impl<'a> Iterator for Scanner<'a> {
 
         'a'..='z' | 'A'..='Z' | '_' => self.identifier(),
 
-        c => return Some(Err(Error::InvalidCharacter(c, self.line))),
+        c => {
+          let bad_bit = &self.rest[..c.len_utf8()];
+          return Some(Err(Error::InvalidCharacter { character: bad_bit, line: self.line }));
+        }
       };
 
       return Some(Ok(token));

@@ -9,8 +9,6 @@ mod reporting;
 mod scanner;
 mod token;
 
-use self::error::Result;
-
 use std::path::Path;
 
 /// Run a file.
@@ -19,12 +17,8 @@ use std::path::Path;
 ///
 /// # Arguments
 /// * `file_path` - The path to the file to run.
-///
-/// # Errors
-/// This function will return an error if encountered an error while
-/// running the file, else it will return `Ok(())` indicating success.
-pub fn run_file(_file_path: impl AsRef<Path>) -> Result<()> {
-  todo!()
+pub fn run_file(_file_path: impl AsRef<Path>) {
+    todo!()
 }
 
 /// Run a prompt.
@@ -34,9 +28,9 @@ pub fn run_file(_file_path: impl AsRef<Path>) -> Result<()> {
 /// # Panics
 /// This function will panic if failed to flush the output.
 pub fn run_prompt() {
-  todo!()
+    todo!()
 }
 
-fn run(_content: String) -> Result<()> {
-  todo!()
+fn run(_content: String) {
+    todo!()
 }

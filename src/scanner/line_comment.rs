@@ -1,7 +1,7 @@
 use super::Scanner;
 
 #[allow(clippy::extra_unused_lifetimes)]
-impl<'a> Scanner<'_> {
+impl Scanner<'_> {
   /// swallows a line comment.
   pub(super) fn line_comment(&mut self) {
     if let Some(new_line_index) = self.rest.find('\n') {
@@ -16,20 +16,14 @@ impl<'a> Scanner<'_> {
 #[cfg(test)]
 mod tests {
   use claims::assert_none;
+  use rstest::rstest;
 
   use super::*;
 
-  #[test]
-  fn lex_one_line_comment_ok() {
-    let mut scanner = Scanner::new("// This is a comment");
-    assert_none!(scanner.next());
-  }
-
-  #[test]
-  fn lex_multiple_line_comments_ok() {
-    let source = "// This is a comment
-  // This is another comment
-  // This is a third comment";
+  #[rstest(source)]
+  #[case::single("// This is a comment")]
+  #[case::multiple("// This is a comment")]
+  fn lex_line_comment_ok(source: &str) {
     let mut scanner = Scanner::new(source);
     assert_none!(scanner.next());
   }

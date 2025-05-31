@@ -12,7 +12,7 @@ fn main() {
   let cli = Cli::parse();
 
   match cli.filename {
-    Some(path) => run_file(path).expect("Failed to run file"),
+    Some(path) => run_file(path),
     None => run_prompt(),
   }
 }

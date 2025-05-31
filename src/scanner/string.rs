@@ -2,9 +2,11 @@ use crate::token::{Token, TokenKind};
 
 use super::{Error, Result, Scanner};
 
-impl<'a> Scanner<'a> {
+impl<'src> Scanner<'src> {
   /// Lex a string literal.
-  pub(super) fn string(&mut self) -> Result<Token<'a>> {
+  pub(super) fn string(&mut self) -> Result<'src, Token<'src>> {
+    let first_quote = &self.rest[..1];
+    let line = self.line;
     self
       .rest
       .char_indices()
@@ -29,37 +31,31 @@ impl<'a> Scanner<'a> {
       })
       .ok_or_else(|| {
         self.rest = "";
-        Error::UnterminatedString
+        Error::UnterminatedString { start: first_quote, line }
       })
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use claims::{assert_matches, assert_none, assert_ok, assert_some};
+  use claims::{assert_err, assert_none, assert_ok, assert_some};
+  use proptest::{prelude::*, prop_compose, proptest};
+  use rstest::rstest;
 
   use super::*;
 
-  #[test]
-  fn lex_string_one_line_ok() {
-    let literal = "this is a string literal";
-    let source = format!("{literal:?}");
-    let mut scanner = Scanner::new(&source);
-    let token = assert_some!(scanner.next());
-    let token = assert_ok!(token);
-
-    assert_matches!(
-      token,
-      Token { kind: TokenKind::String(s), lexeme: Some(l), line: 1 } if s == literal && l == format!(r#""{literal}""#)
-    );
-    assert_none!(scanner.next());
-  }
-
-  #[test]
-  fn lex_string_multi_line_ok() {
-    let literal = "this is a string literal
+  #[rstest(literal)]
+  #[case::empty("")]
+  #[case::one_line("this is a string literal")]
+  #[case::multi_line(
+    "this is a string literal
 string literal can cross multiple lines.
-just like rust's.";
+just like rust's."
+  )]
+  #[case::escaped_new_line("\n")]
+  #[case::escaped_null_character("\0")]
+  fn lex_string_ok(literal: &str) {
+    let line = literal.chars().filter(|&c| c == '\n').count();
     let source = format!(
       r#""{literal}"
   "#,
@@ -70,14 +66,109 @@ just like rust's.";
     let token = assert_some!(token);
     let token = assert_ok!(token);
 
-    assert_matches!(
-      token,
-      Token {
-        kind: TokenKind::String(s),
-        line: 3,
-        lexeme: Some( l )
-      } if s == literal && l == format!(r#""{literal}""#)
-    );
+    match token {
+      Token { kind: TokenKind::String(s), line: line2, lexeme: Some(lexeme) } => {
+        assert_eq!(s, literal);
+        assert_eq!(line + 1, line2);
+        assert_eq!(lexeme, format!(r#""{literal}""#));
+      }
+      _ => panic!("Wrong token: {token:?}"),
+    }
+
     assert_none!(scanner.next());
   }
+
+  #[rstest(literal)]
+  #[case::empty("")]
+  #[case::one_line("this is a string literal")]
+  #[case::multi_line(
+    "this is a string literal
+  string literal can cross multiple lines.
+  just like rust's."
+  )]
+  #[case::escaped_new_line("\n")]
+  #[case::escaped_null_character("\0")]
+  fn lex_string_err(literal: &str) {
+    let source = format!(
+      r#""{literal}
+        "#,
+    );
+    let mut scanner = Scanner::new(&source);
+
+    let next = scanner.next();
+    let next = assert_some!(next);
+    let error = assert_err!(next);
+
+    match error {
+      Error::UnterminatedString { start, line } => {
+        let start2 = &source[..1];
+        assert_eq!(start, start2);
+        assert_eq!(start.as_ptr(), start2.as_ptr());
+        assert_eq!(line, 1);
+      }
+      _ => panic!("Wrong error: {error:?}"),
+    }
+
+    assert_none!(scanner.next());
+  }
+
+  prop_compose! {
+    fn arb_string_literal()(s in r#"[^"]"#) -> String {
+      s.replace('\\', r"\\")
+    }
+  }
+
+  proptest! {
+    #[test]
+    fn lex_arb_string_ok(literal in arb_string_literal()) {
+      println!("literal {literal:?}");
+      let line = literal.chars().filter(|&c| c == '\n').count();
+      let source = format!(
+        r#""{literal}"
+    "#,
+      );
+      let mut scanner = Scanner::new(&source);
+
+      let token = scanner.next();
+      let token = assert_some!(token);
+      let token = assert_ok!(token);
+
+      match token {
+        Token { kind: TokenKind::String(s), line: line2, lexeme: Some(lexeme) } => {
+          prop_assert_eq!(s, literal.clone());
+          prop_assert_eq!(line+1, line2);
+          prop_assert_eq!(lexeme, format!(r#""{literal}""#));
+        }
+        _ => panic!("Wrong token: {token:?}")
+        }
+
+      assert_none!(scanner.next());
+    }
+  }
+
+  proptest! {
+  #[test]
+  fn lex_arb_string_err(literal in arb_string_literal()) {
+      let source = format!(
+        r#""{literal}
+          "#,
+      );
+      let mut scanner = Scanner::new(&source);
+
+      let next = scanner.next();
+      let next = assert_some!(next);
+      let error = assert_err!(next);
+
+      match error {
+        Error::UnterminatedString { start, line } => {
+          let start2 = &source[..1];
+          assert_eq!(start, start2);
+          assert_eq!(start.as_ptr(), start2.as_ptr());
+          assert_eq!(line, 1);
+        }
+        _ => panic!("Wrong error: {error:?}"),
+      }
+
+      assert_none!(scanner.next());
+    }}
 }
